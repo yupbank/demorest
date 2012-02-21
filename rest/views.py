@@ -1,5 +1,5 @@
 # Create your views here.
-from models import User, Place, Checkin, get_distance_hav_by_lat_lng, get_lat_lng_range
+from models import User, Place, Checkin, get_distance_hav_by_lat_lng, get_lat_lng_range, get_id_rank_list, get_rank_by_id
 import json
 from django.http import HttpResponse, HttpResponseRedirect
 
@@ -120,11 +120,76 @@ def checkins(request,id):
 
 
 def checkin(request,id):
-    pass
+    p = Place.objects.get(id=id)
+    u = User.objects.all()[-1]
+    c = Checkin(place=p,user=u)
+    c.save()
+    result = dict(
+                response = dict(
+                        meta = dict(),
+                        errors = dict(),
+                        status = 'success',
+                        data = dict(
+                                checkin = dict(
+                                        id = c.id,
+                                        time = c.time,
+                                        user = dict(
+                                                id = u.id,
+                                                username = u.username,
+                                            )
+                                    )
+                            )
+                    )
+            )
+   return HttpResponse(json.dumps(result)) 
 
-def user(request,id):
-    pass
+def user(request):
+    limit = request.GET.get('limit',10)
+    offset = request.GET.get('offset',0)
+    check_count = []
+    for u in User.objects.all():
+        check_count.append([u.id,u.checkin_set.count()])
+    rank_list = get_id_rank_list()
+    rank = rank_list[offset:offset+limit]
+    res = []
+    for r in rank:
+        _user = User.objects.get(id=r[0])
+        res.append(dict(
+                id = r[0],
+                rank = r[1],
+                username = _user.username,
+                checkins = _user.checkin_set.count(),
+            ))
+    result = dict(
+                response = dict(
+                        meta = dict(
+                                limit = limit,
+                                offset = offset,
+                                sort = 'rank',
+                                count = 1,
+                            ),
+                        errors = dict(),
+                        data = res,
+                    )
+            )
+    return HttpResponse(json.dumps(result)) 
+    
+
 
 def users(request,id):
-    pass
+    u = User.objects.get(id=id)
+    rank = get_rank_by_id(id)
+    result = dict(
+                response = dict(
+                        meta = dict(),
+                        errors = dict(),
+                        data = dict(
+                                id = id,
+                                username = u.username,
+                                rank = rank,
+                                checkin_count = u.checkin_set.count(),
+                            )
+                    )
+            )
+    return HttpResponse(json.dumps(result)) 
 
