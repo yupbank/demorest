@@ -28,7 +28,7 @@ class Checkin(models.Model):
     time = models.DateTimeField(default=datetime.datetime.now())
 
     def __unicode__(self):
-        return self.user
+        return str(self.id)
 
 from math import sin, asin, cos, radians, fabs, sqrt, degrees
 

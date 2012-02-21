@@ -4,11 +4,12 @@ from django.conf.urls.defaults import patterns, include, url
 from django.contrib import admin
 admin.autodiscover()
 
-urlpatterns = patterns('rest.views',
+urlpatterns = patterns('',
     # Examples:
   #  url(r'^(\w+)/(\w+)','index',name=('home','name')),
-    url(r'^api/v1/places','places'),
-    url(r'^api/vi/places/(\d+)','place',name='id'),
+    #url(r'^api/v1/places','places'),
+    #url(r'^api/vi/places/(\d+)','place',name='id'),
+    url(r'^api/v1/',include('rest.urls')),
     # url(r'^$', 'restdemo.views.home', name='home'),
     # url(r'^restdemo/', include('restdemo.foo.urls')),
 
