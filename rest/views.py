@@ -45,7 +45,7 @@ def places(request):
     respone = dict(respone = dict(meta = meta, error = error, data = data))
    
    
-    return HttpResponse(json.dumps(respone))
+    return HttpResponse(json.dumps(respone),mimetype='application/json')
 
 def place(request,id):
     lat = request.GET.get('lat',None)
@@ -149,8 +149,7 @@ def user(request):
     check_count = []
     for u in User.objects.all():
         check_count.append([u.id,u.checkin_set.count()])
-    rank_list = get_id_rank_list()
-    rank = rank_list[offset:offset+limit]
+    rank = get_id_rank_list(limit,offset)
     res = []
     for r in rank:
         _user = User.objects.get(id=r[0])
