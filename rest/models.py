@@ -1,16 +1,17 @@
 from __future__ import division
 from django.db import models
 import datetime
-
+from django.contrib.auth.models import User as _User
 
 # Create your models here.
-class User(models.Model):
-    username = models.CharField(max_length=200)
-    email = models.EmailField()
+class User(_User):
     sex = models.CharField(max_length=1, choices=(('M','Male'),('F','Female')), default='M')
-
-    def __unicode__(self):
-        return self.username
+    pass
+#    username = models.CharField(max_length=200)
+#    email = models.EmailField()
+#
+#    def __unicode__(self):
+#        return self.username
 
 
 class Place(models.Model):
@@ -77,7 +78,7 @@ def get_id_rank_list(limit=10,offset=0):
         rank.update({i:j+1})
     rank = [ [i,rank[j]] for i,j in check_count]
     rank.sort(key=lambda x:x[1],reverse=True)
-    return rank[offser:offser+limit]
+    return rank[offset:offset+limit]
 
 def get_rank_by_id(id):
     rank_list = get_id_rank_list()
