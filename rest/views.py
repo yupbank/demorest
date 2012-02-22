@@ -5,8 +5,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 
 def index(request,):
-    print type(request)
-    print request.GET.get('haha',None)
     return render_to_response('index.htm',{})
 
 
@@ -146,7 +144,6 @@ def checkin(request,id):
     errors = []
     c_id = ''
     c_time = ''
-    print request.user.id
     if p:
         p= p[0]
         c = Checkin(place=p,user=u)
