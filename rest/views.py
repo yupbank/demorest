@@ -117,12 +117,14 @@ def checkins(request,id):
     if not errors:
         p = Place.objects.get(id=id)
         if p:
-            checkins = p.checkin_set.all()[offset:limit+offset]
-            for c in checkins:
+            checkins = p.checkin_set.all().order_by('-time')[offset:limit+offset]
+            for i,c in enumerate(checkins):
+                if i>2:
+                    break
                 res.append(
                         dict(
                             id = c.id,
-                            time = c.time.hour,
+                            time = '%d hours ago'%c.time.hour,
                             user = dict(
                                     id = c.user.id,
                                     name = c.user.username,
