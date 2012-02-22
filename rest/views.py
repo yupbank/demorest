@@ -19,6 +19,7 @@ def places(request):
     meta = {} 
     try:
         limit, offset = map(int,[limit, offset])    
+        radius = float(radius)
     except Exception,e:
         error.append(e.message)
     
