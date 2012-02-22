@@ -1,4 +1,4 @@
-<div style="margin:0 auto;text-align: center;">
+<div style="margin:0 auto;text-align: center; border-buttom: black;height=700px;">
     <h1> welcome to my demo_rest</h1>
     <p>
     <ul style="list-style:none;text-align:left;margin: 100px auto;width:800px;">
@@ -19,6 +19,40 @@
     admin:yup
     <br />
     password:1
-
     </p>
+    <p>
+    <ul style="list-style:none;text-align:left;margin: 100px auto;width:800px;">
+        <li><strong>task one :</strong>i choosed the sqlite3 to implement the django app. but, as i googled, the best choice is couchDB,cause the couchDB support RESTful itself :)
+        </li><li> <strong> task two:</strong> the sql are as follow:
+<pre>
+BEGIN;
+CREATE TABLE "rest_user" (
+    "user_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "auth_user" ("id"),
+    "sex" varchar(1) NOT NULL
+)
+;
+CREATE TABLE "rest_place" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "name" varchar(200) NOT NULL,
+    "lat" real NOT NULL,
+    "lng" real NOT NULL,
+    "address" text NOT NULL
+)
+;
+CREATE TABLE "rest_checkin" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "user_id" integer NOT NULL REFERENCES "rest_user" ("user_ptr_id"),
+    "place_id" integer NOT NULL REFERENCES "rest_place" ("id"),
+    "time" datetime NOT NULL
+)
+;
+COMMIT;
+    
+
+</pre>
+        created two index on lat and lng,beacuse the place range search will cost much :(
+                                          </li>
+                                          </ul>
+                                          </p>
+
     </div>
