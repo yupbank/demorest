@@ -2,11 +2,12 @@
 from models import User, Place, Checkin, get_distance_hav_by_lat_lng, get_lat_lng_range, get_id_rank_list, get_rank_by_id
 import json
 from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render_to_response, get_object_or_404
 
 def index(request,):
     print type(request)
     print request.GET.get('haha',None)
-    return HttpResponse(json.dumps({'aa':'sada'}))
+    return render_to_response('index.htm',{})
 
 
 def places(request):
@@ -17,9 +18,14 @@ def places(request):
     radius = request.GET.get('radius',1)
     data = []
     error = []
-    limit, offset = map(int,[limit, offset])    
+    meta = {} 
+    try:
+        limit, offset = map(int,[limit, offset])    
+    except Exception,e:
+        error.append(e.message)
     
-    meta = dict(
+    if not error:
+        meta = dict(
                 lat = lat,
                 lng = lng,
                 limit = limit,
@@ -27,20 +33,22 @@ def places(request):
                 radius = radius,
                 )
 
-    lat1, lat2, lng1, lng2 = get_lat_lng_range(lat, lng, radius)
-    places = Place.objects.filter(lat__gt=lat1).filter(lat__lt=lat2).filter(lng__gt=lng1).filter(lng__lt=lng2)
-    if places: 
-        for p in places:
-            result = dict(
-                            id = p.id,
-                            name = p.name, 
-                            address = p.address,
-                            lat = p.lat, 
-                            lng = p.lng,
-                            distance = get_distance_hav_by_lat_lng(p.lat,p.lng,lat,lng)
-                            )
-            data.append(result)
-    
+        lat1, lat2, lng1, lng2 = get_lat_lng_range(lat, lng, radius)
+        places = Place.objects.filter(lat__gt=lat1).filter(lat__lt=lat2).filter(lng__gt=lng1).filter(lng__lt=lng2)
+        if places: 
+            for p in places:
+                result = dict(
+                                id = p.id,
+                                name = p.name, 
+                                address = p.address,
+                                lat = p.lat, 
+                                lng = p.lng,
+                                distance = get_distance_hav_by_lat_lng(p.lat,p.lng,lat,lng)
+                                )
+                data.append(result)
+        else:
+            error.append('out of range')
+        
     
     respone = dict(respone = dict(meta = meta, error = error, data = data))
    
@@ -50,40 +58,48 @@ def places(request):
 def place(request,id):
     lat = request.GET.get('lat',None)
     lng = request.GET.get('lng',None)
-
-    p = Place.objects.get(id=id)
-    address = p.address
-    checkins_count= p.checkin_set.count()
-    checkins = p.checkin_set.all()[:2]
+    errors = []
     res = []
-    for c in checkins:
-        c_id = c.id
-        c_time = c.time.hour
-        c_user_id = c.user.id
-        c_user_name = c.user.username
-        res.append(
-                    dict(
-                    id = c_id,
-                    time = c_time,
-                    user = dict(
-                            id = c_user_id,
-                            username = c_user_name
-                    )))
+    data = {}
+
+    p = Place.objects.filter(id=id)
+    if p:
+        p = p[0]
+    else:
+        errors.append('no such place!')
+    if not errors:
+        address = p.address
+        checkins_count= p.checkin_set.count()
+        checkins = p.checkin_set.all()[:2]
+        for c in checkins:
+            c_id = c.id
+            c_time = c.time.hour
+            c_user_id = c.user.id
+            c_user_name = c.user.username
+            res.append(
+                        dict(
+                        id = c_id,
+                        time = c_time,
+                        user = dict(
+                                id = c_user_id,
+                                username = c_user_name
+                        )))
+
+        data = dict(
+                        id = id,
+                        name = p.name,
+                        lat = p.lat,
+                        lng = p.lng,
+                        distance = get_distance_hav_by_lat_lng(lat,lng,p.lat,p.lng),
+                        checkins_count = checkins_count,
+                        checkins = res,
+                        )
+
     result = dict(
             response = dict(
                     meta = dict(),
-                    errors = dict(),
-                    data = dict(
-                            id = id,
-                            name = p.name,
-                            lat = p.lat,
-                            lng = p.lng,
-                            distance = get_distance_hav_by_lat_lng(lat,lng,p.lat,p.lng),
-                            checkins_count = checkins_count,
-                            checkins = res,
-                        
-                        )
-                )
+                    errors = errors,
+                    data =  data,               )
         )
     
 
@@ -92,27 +108,32 @@ def place(request,id):
 def checkins(request,id):
     limit = request.GET.get('limit',10)
     offset = request.GET.get('offset',0)
-    limit, offset = map(int,[limit, offset])    
-
-    p = Place.objects.get(id=id)
+    errors = []
     res = []
-    if p:
-        checkins = p.checkin_set.all()[offset:limit+offset]
-        for c in checkins:
-            res.append(
-                    dict(
-                        id = c.id,
-                        time = c.time.hour,
-                        user = dict(
-                                id = c.user.id,
-                                name = c.user.username,
+    try:
+        limit, offset = map(int,[limit, offset])    
+    except Exception,e:
+        errors.append(e.message)
+
+    if not errors:
+        p = Place.objects.get(id=id)
+        if p:
+            checkins = p.checkin_set.all()[offset:limit+offset]
+            for c in checkins:
+                res.append(
+                        dict(
+                            id = c.id,
+                            time = c.time.hour,
+                            user = dict(
+                                    id = c.user.id,
+                                    name = c.user.username,
+                                )
+                            
                             )
-                        
                         )
-                    )
     result = dict(
             meta = dict(),
-            errors = dict(),
+            errors = errors,
             data = res,
             )
     return HttpResponse(json.dumps(result))
