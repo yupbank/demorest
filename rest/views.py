@@ -32,7 +32,7 @@ def places(request):
                 )
 
         lat1, lat2, lng1, lng2 = get_lat_lng_range(lat, lng, radius)
-        places = Place.objects.filter(lat__gt=lat1).filter(lat__lt=lat2).filter(lng__gt=lng1).filter(lng__lt=lng2)
+        places = Place.objects.filter(lat__gt=lat1).filter(lat__lt=lat2).filter(lng__gt=lng2).filter(lng__lt=lng1)
         if places: 
             for p in places:
                 result = dict(
