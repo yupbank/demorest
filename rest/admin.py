@@ -1,5 +1,5 @@
 from django.contrib import admin
-from rest.models import Place, User, Checkin
+from rest.models import Place, UserProfile, Checkin
 
 class PlaceInline(admin.TabularInline):
     modle = Place
@@ -7,4 +7,4 @@ class PlaceInline(admin.TabularInline):
 
 admin.site.register(Checkin)
 admin.site.register(Place)
-admin.site.register(User)
+admin.site.register(UserProfile)

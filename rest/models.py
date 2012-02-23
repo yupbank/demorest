@@ -1,12 +1,14 @@
 from __future__ import division
 from django.db import models
 import datetime
-from django.contrib.auth.models import User as _User
+from django.contrib.auth.models import User
 
 # Create your models here.
-class User(_User):
+class UserProfile(models.Model):
+    user = models.OneToOneField(User)
     sex = models.CharField(max_length=1, choices=(('M','Male'),('F','Female')), default='M')
-    pass
+    
+
 #    username = models.CharField(max_length=200)
 #    email = models.EmailField()
 #
