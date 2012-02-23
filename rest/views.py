@@ -142,8 +142,9 @@ def checkins(request,id):
 
     
     if not errors:
-        p = Place.objects.get(id=id)
+        p = Place.objects.filter(id=id)
         if p:
+            p = p[0]
             checkins = p.checkin_set.all().order_by('-time')[offset:limit+offset]
             for i,c in enumerate(checkins):
                 if i>2:
@@ -159,6 +160,8 @@ def checkins(request,id):
                             
                             )
                         )
+        else:
+            errors.append('no such place!')
 
 
     result = dict(
