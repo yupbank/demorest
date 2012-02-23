@@ -1,39 +1,46 @@
 # Create your views here.
-from models import User, Place, Checkin, get_distance_hav_by_lat_lng, get_lat_lng_range, get_id_rank_list, get_rank_by_id
+from models import User, Place, Checkin
+from utils import get_distance_hav_by_lat_lng, get_lat_lng_range, get_id_rank_list, get_rank_by_id
 import json
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 
-def index(request,):
-    return render_to_response('index.htm',{})
+def index(request):
+    return render_to_response('index.htm', {})
 
 
 def places(request):
-    lat = request.GET.get('lat',None)
-    lng = request.GET.get('lng',None)
-    limit = request.GET.get('limit',10)
-    offset = request.GET.get('offset',0)
-    radius = request.GET.get('radius',1)
+    lat = request.GET.get('lat', None)
+    lng = request.GET.get('lng', None)
+    limit = request.GET.get('limit', 10)
+    offset = request.GET.get('offset', 0)
+    radius = request.GET.get('radius', 1)
     data = []
     error = []
     meta = {} 
+
+
     try:
         limit, offset = map(int,[limit, offset])    
         radius = float(radius)
     except Exception,e:
         error.append(e.message)
     
+    
+    
     if not error:
         meta = dict(
-                lat = lat,
-                lng = lng,
-                limit = limit,
-                offset = offset,
-                radius = radius,
-                )
+                        lat = lat,
+                        lng = lng,
+                        limit = limit,
+                        offset = offset,
+                        radius = radius,
+                    )
 
         lat1, lat2, lng1, lng2 = get_lat_lng_range(lat, lng, radius)
         places = Place.objects.filter(lat__gt=lat1).filter(lat__lt=lat2).filter(lng__gt=lng2).filter(lng__lt=lng1)
+        
+        
         if places: 
             for p in places:
                 result = dict(
@@ -43,7 +50,7 @@ def places(request):
                                 lat = p.lat, 
                                 lng = p.lng,
                                 distance = get_distance_hav_by_lat_lng(p.lat,p.lng,lat,lng)
-                                )
+                            )
                 data.append(result)
         else:
             error.append('out of range')
@@ -60,16 +67,21 @@ def place(request,id):
     errors = []
     res = []
     data = {}
-
     p = Place.objects.filter(id=id)
+    
+    
     if p:
         p = p[0]
     else:
         errors.append('no such place!')
+    
+    
     if not errors:
         address = p.address
         checkins_count= p.checkin_set.count()
         checkins = p.checkin_set.all()[:2]
+        
+        
         for c in checkins:
             c_id = c.id
             c_time = c.time.hour
@@ -77,13 +89,16 @@ def place(request,id):
             c_user_name = c.user.username
             res.append(
                         dict(
-                        id = c_id,
-                        time = c_time,
-                        user = dict(
-                                id = c_user_id,
-                                username = c_user_name
-                        )))
+                            id = c_id,
+                            time = c_time,
+                            user = dict(
+                                        id = c_user_id,
+                                        username = c_user_name
+                                        )
+                            )
+                        )
 
+        
         data = dict(
                         id = id,
                         name = p.name,
@@ -92,28 +107,35 @@ def place(request,id):
                         distance = get_distance_hav_by_lat_lng(lat,lng,p.lat,p.lng),
                         checkins_count = checkins_count,
                         checkins = res,
-                        )
+                    )
 
+    
     result = dict(
-            response = dict(
-                    meta = dict(),
-                    errors = errors,
-                    data =  data,               )
-        )
+                    response = dict(
+                                    meta = dict(),
+                                    errors = errors,
+                                    data =  data,               
+                                    )
+                )
     
 
     return HttpResponse(json.dumps(result))
+
+
 
 def checkins(request,id):
     limit = request.GET.get('limit',10)
     offset = request.GET.get('offset',0)
     errors = []
     res = []
+
+    
     try:
         limit, offset = map(int,[limit, offset])    
     except Exception,e:
         errors.append(e.message)
 
+    
     if not errors:
         p = Place.objects.get(id=id)
         if p:
@@ -126,27 +148,31 @@ def checkins(request,id):
                             id = c.id,
                             time = '%d hours ago'%c.time.hour,
                             user = dict(
-                                    id = c.user.id,
-                                    name = c.user.username,
-                                )
+                                        id = c.user.id,
+                                        name = c.user.username,
+                                        )
                             
                             )
                         )
+
+
     result = dict(
-            meta = dict(),
-            errors = errors,
-            data = res,
-            )
+                    meta = dict(),
+                    errors = errors,
+                    data = res,
+                )
+
     return HttpResponse(json.dumps(result))
 
 
 
-def checkin(request,id):
+def checkin(request, id):
     p = Place.objects.filter(id=id)
     u = User.objects.all()[0]
     errors = []
     c_id = ''
     c_time = ''
+    
     if p:
         p= p[0]
         c = Checkin(place=p,user=u)
@@ -158,23 +184,27 @@ def checkin(request,id):
 
 
     result = dict(
-                response = dict(
-                        meta = dict(),
-                        errors = errors,
-                        status = 'success' if  not errors  else 'fail',
-                        data = dict(
-                                checkin = dict(
-                                        id = c_id,
-                                        time = c_time,
-                                        user = dict(
-                                                id = u.id,
-                                                username = u.username,
-                                            )
+                    response = dict(
+                                    meta = dict(),
+                                    errors = errors,
+                                    status = 'success' if not errors else 'fail',
+                                    data = dict(
+                                                checkin = dict(
+                                                                id = c_id,
+                                                                time = c_time,
+                                                                user = dict(
+                                                                            id = u.id,
+                                                                            username = u.username,
+                                                                            )
+                                                                )
+                                                )       
                                     )
-                            )
-                    )
-            )
+                )
+    
+
     return HttpResponse(json.dumps(result)) 
+
+
 
 def user(request):
     limit = request.GET.get('limit',10)
@@ -197,23 +227,24 @@ def user(request):
         
         
         res.append(dict(
-                id = r[0],
-                rank = r[1],
-                username = _user.username,
-                checkins = _user.checkin_set.count(),
-            ))
+                        id = r[0],
+                        rank = r[1],
+                        username = _user.username,
+                        checkins = _user.checkin_set.count(),
+                        )       
+                    )
     
         
     result = dict(
                     response = dict(
-                            meta = dict(
-                                limit = limit,
-                                offset = offset,
-                                sort = 'rank',
-                                count = 1,
-                                ),
-                            errors = dict(),
-                            data = res,
+                                    meta = dict(
+                                                limit = limit,
+                                                offset = offset,
+                                                sort = 'rank',
+                                                count = 1,
+                                        ),
+                                    errors = dict(),
+                                    data = res,
                     )
             )
 
@@ -228,6 +259,8 @@ def users(request,id):
     rank = '',
     checkin_count = '',
     u = User.objects.filter(id=id)
+
+    
     if u:
         u = u[0]
         rank = get_rank_by_id(id)
@@ -238,16 +271,18 @@ def users(request,id):
 
 
     result = dict(
-                response = dict(
-                        meta = dict(),
-                        errors = errors,
-                        data = dict(
-                                id = id,
-                                username = username,
-                                rank = rank,
-                                checkin_count = checkin_count,
-                            )
+                    response = dict(
+                                    meta = dict(),
+                                    errors = errors,
+                                    data = dict(
+                                                id = id,
+                                                username = username,
+                                                rank = rank,
+                                                checkin_count = checkin_count,
+                                                )
+                                    )
                     )
-            )
+    
+    
     return HttpResponse(json.dumps(result)) 
 
