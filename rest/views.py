@@ -19,7 +19,7 @@ def places(request):
     error = []
     meta = {} 
     
-    if not(lat or lng):
+    if not(lat and lng):
         error.append('no lat or lang!')
 
     try:
@@ -71,7 +71,7 @@ def place(request,id):
     data = {}
     p = Place.objects.filter(id=id)
     
-    if not(lat or lng):
+    if not(lat and lng):
         error.append('no lat or lang!')
     
     
