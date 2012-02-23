@@ -18,7 +18,9 @@ def places(request):
     data = []
     error = []
     meta = {} 
-
+    
+    if not(lat or lng):
+        error.append('no lat or lang!')
 
     try:
         limit, offset = map(int,[limit, offset])    
@@ -68,6 +70,9 @@ def place(request,id):
     res = []
     data = {}
     p = Place.objects.filter(id=id)
+    
+    if not(lat or lng):
+        error.append('no lat or lang!')
     
     
     if p:
