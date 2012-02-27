@@ -1,5 +1,5 @@
 # Create your views here.
-from models import User, Place, Checkin
+from models import User, Place, Checkin, UserProfile
 from utils import get_distance_hav_by_lat_lng, get_lat_lng_range, get_id_rank_list, get_rank_by_id
 import json
 from django.http import HttpResponse, HttpResponseRedirect
@@ -267,14 +267,19 @@ def users(request,id):
     rank = '',
     checkin_count = '',
     u = User.objects.filter(id=id)
-
+    profile = ''
     
     if u:
         u = u[0]
-        rank = get_rank_by_id(id)
-        username = u.username
-        checkin_count = u.checkin_set.count()
-        sex = None
+        try:
+            profile = u.get_profile() 
+        except Exception,e:
+            errors.append(e.message)
+        else:
+            profile = profile.sex
+            rank = get_rank_by_id(id)
+            username = u.username
+            checkin_count = u.checkin_set.count()
     else:
         errors.append('user_id error')
 
@@ -286,6 +291,7 @@ def users(request,id):
                                     data = dict(
                                                 id = id,
                                                 username = username,
+                                                sex = profile,
                                                 rank = rank,
                                                 checkin_count = checkin_count,
                                                 )

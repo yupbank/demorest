@@ -1,5 +1,5 @@
 # Django settings for restdemo project.
-
+AUTH_PROFILE_MODULE = 'rest.UserProfile'
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
