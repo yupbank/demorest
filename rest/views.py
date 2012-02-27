@@ -12,7 +12,7 @@ def index(request):
 def places(request):
     lat = request.GET.get('lat', None)
     lng = request.GET.get('lng', None)
-    limit = request.GET.get('limit', 10)
+    limit = request.GET.get('limit', 0)
     offset = request.GET.get('offset', 0)
     radius = request.GET.get('radius', 1)
     data = []
@@ -58,7 +58,7 @@ def places(request):
             error.append('out of range')
         
     
-    respone = dict(respone = dict(meta = meta, error = error, data = data))
+    respone = dict(respone = dict(meta = meta, error = error, data = data[offset:offset+limit]))
    
    
     return HttpResponse(json.dumps(respone),mimetype='application/json')
@@ -274,6 +274,7 @@ def users(request,id):
         rank = get_rank_by_id(id)
         username = u.username
         checkin_count = u.checkin_set.count()
+        sex = None
     else:
         errors.append('user_id error')
 
