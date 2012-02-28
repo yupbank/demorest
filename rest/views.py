@@ -34,7 +34,6 @@ def places(request):
     if radius <0 or radius>EARTH_RADIUS:
         error.append('radius wrong')
     
-    print error
     if not error:
         meta = dict(
                         lat = lat,
