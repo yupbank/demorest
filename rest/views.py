@@ -1,6 +1,6 @@
 # Create your views here.
 from models import User, Place, Checkin, UserProfile
-from utils import get_distance_hav_by_lat_lng, get_lat_lng_range, get_id_rank_list, get_rank_by_id
+from utils import get_distance_hav_by_lat_lng, get_lat_lng_range, get_id_rank_list, get_rank_by_id, EARTH_RADIUS
 import json
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
@@ -24,12 +24,17 @@ def places(request):
 
     try:
         limit, offset = map(int,[limit, offset])    
+        lat, lng  = map(float,[lat, lng])    
         radius = float(radius)
     except Exception,e:
+        limit, offset = 10, 0
         error.append(e.message)
     
     
+    if radius <0 or radius>EARTH_RADIUS:
+        error.append('radius wrong')
     
+    print error
     if not error:
         meta = dict(
                         lat = lat,
@@ -73,6 +78,11 @@ def place(request,id):
     
     if not(lat and lng):
         error.append('no lat or lang!')
+    
+    try:
+        lat, lng  = map(float,[lat, lng])    
+    except Exception,e:
+        error.append(e.message)
     
     
     if p:
@@ -138,6 +148,7 @@ def checkins(request,id):
     try:
         limit, offset = map(int,[limit, offset])    
     except Exception,e:
+        limit, offset = 10, 0
         errors.append(e.message)
 
     
@@ -217,30 +228,34 @@ def checkin(request, id):
 def user(request):
     limit = request.GET.get('limit',10)
     offset = request.GET.get('offset',0)
-    limit, offset = map(int,[limit, offset])    
     check_count = []
     errors = []
     res = []
     
-    
-    for u in User.objects.all():
-        check_count.append([u.id,u.checkin_set.count()])
-    
-    
-    rank = get_id_rank_list(limit,offset)
-    
-    
-    for r in rank:
-        _user = User.objects.get(id=r[0])
+    try:
+        limit, offset = map(int,[limit, offset])    
+    except Exception,e:
+        errors.append(e.message)
+
+    if not errors: 
+        for u in User.objects.all():
+            check_count.append([u.id,u.checkin_set.count()])
         
         
-        res.append(dict(
-                        id = r[0],
-                        rank = r[1],
-                        username = _user.username,
-                        checkins = _user.checkin_set.count(),
-                        )       
-                    )
+        rank = get_id_rank_list(limit,offset)
+        
+        
+        for r in rank:
+            _user = User.objects.get(id=r[0])
+            
+            
+            res.append(dict(
+                            id = r[0],
+                            rank = r[1],
+                            username = _user.username,
+                            checkins = _user.checkin_set.count(),
+                            )       
+                        )
     
         
     result = dict(
@@ -251,7 +266,7 @@ def user(request):
                                                 sort = 'rank',
                                                 count = 1,
                                         ),
-                                    errors = dict(),
+                                    errors = errors,
                                     data = res,
                     )
             )
