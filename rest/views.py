@@ -12,7 +12,7 @@ def index(request):
 def places(request):
     lat = request.GET.get('lat', None)
     lng = request.GET.get('lng', None)
-    limit = request.GET.get('limit', 0)
+    limit = request.GET.get('limit', 10)
     offset = request.GET.get('offset', 0)
     radius = request.GET.get('radius', 1)
     data = []
@@ -24,11 +24,13 @@ def places(request):
 
     try:
         limit, offset = map(int,[limit, offset])    
-        lat, lng  = map(float,[lat, lng])    
+        lat, lng  = map(float,[lat, lng]) 
         radius = float(radius)
     except Exception,e:
         limit, offset = 10, 0
         error.append(e.message)
+    if filter(lambda x:abs(x[0])>90 or abs(x[1])>180,[[lat,lng]]):
+        error.append('lat or lng wrong!')
     
     
     
@@ -42,8 +44,7 @@ def places(request):
                     )
 
         lat1, lat2, lng1, lng2 = get_lat_lng_range(lat, lng, radius)
-        places = Place.objects.filter(lat__gt=lat1).filter(lat__lt=lat2).filter(lng__gt=lng2).filter(lng__lt=lng1)
-        
+        places = Place.objects.filter(lat__gt=lat1).filter(lat__lt=lat2).filter(lng__gt=lng1).filter(lng__lt=lng2)
         
         if places: 
             for p in places:
@@ -56,6 +57,7 @@ def places(request):
                                 distance = get_distance_hav_by_lat_lng(p.lat,p.lng,lat,lng)
                             )
                 data.append(result)
+                print data
         else:
             error.append('out of range')
         

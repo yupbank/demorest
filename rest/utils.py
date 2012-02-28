@@ -20,8 +20,10 @@ def get_distance_hav_by_lat_lng(lat0, lng0, lat1, lng1):
 
 def get_lat_lng_range(lat0, lng0, distance=1.0):
     lat0, lng0 = map(float, [lat0, lng0])
-    dlng = 2 * asin(sin(distance / (2 * EARTH_RADIUS)) / cos(lat0))
-    dlng = degrees(dlng)
+
+    dlng = distance/(30.887*cos(lat0))
+    #dlng = 2 * asin(sin(distance / (2 * EARTH_RADIUS)) / cos(lat0))
+    #dlng = degrees(dlng)
 
     dlat = distance / EARTH_RADIUS
     dlat = degrees(dlat)
