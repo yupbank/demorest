@@ -57,7 +57,6 @@ def places(request):
                                 distance = get_distance_hav_by_lat_lng(p.lat,p.lng,lat,lng)
                             )
                 data.append(result)
-                print data
         else:
             error.append('out of range')
         
