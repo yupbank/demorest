@@ -31,8 +31,6 @@ def places(request):
         error.append(e.message)
     
     
-    if radius <0 or radius>EARTH_RADIUS:
-        error.append('radius wrong')
     
     if not error:
         meta = dict(
@@ -93,7 +91,7 @@ def place(request,id):
     if not errors:
         address = p.address
         checkins_count= p.checkin_set.count()
-        checkins = p.checkin_set.all()[:2]
+        checkins = p.checkin_set.all()[:3]
         
         
         for c in checkins:
@@ -104,7 +102,7 @@ def place(request,id):
             res.append(
                         dict(
                             id = c_id,
-                            time = c_time,
+                            time = '%s hours ago'%c_time,
                             user = dict(
                                         id = c_user_id,
                                         username = c_user_name
@@ -186,19 +184,26 @@ def checkins(request,id):
 
 def checkin(request, id):
     p = Place.objects.filter(id=id)
-    u = User.objects.all()[0]
+    u = request.user
     errors = []
     c_id = ''
     c_time = ''
+    u_id = ''
+    u_name = '' 
     
-    if p:
-        p= p[0]
-        c = Checkin(place=p,user=u)
-        c_id = c.id
-        c_time = c.time.hour
-        c.save()
-    else:
-        errors.append('no such place')
+    if not isinstance(u, User):
+        errors.append('user not login')    
+    if not errors:
+        u_id = u.id
+        u_name = u.username
+        if p:
+            p= p[0]
+            c = Checkin(place=p,user=u)
+            c_id = c.id
+            c_time = c.time.hour
+            c.save()
+        else:
+            errors.append('no such place')
 
 
     result = dict(
@@ -211,8 +216,8 @@ def checkin(request, id):
                                                                 id = c_id,
                                                                 time = c_time,
                                                                 user = dict(
-                                                                            id = u.id,
-                                                                            username = u.username,
+                                                                            id = u_id,
+                                                                            username = u_name,
                                                                             )
                                                                 )
                                                 )       
