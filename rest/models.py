@@ -34,4 +34,6 @@ class Checkin(models.Model):
 
     def __unicode__(self):
         return str(self.id)
-
+    
+    class Meta:
+        ordering = ['-time']

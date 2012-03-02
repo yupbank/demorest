@@ -268,7 +268,7 @@ def user(request):
                                     meta = dict(
                                                 limit = limit,
                                                 offset = offset,
-                                                sort = 'rank',
+                                                sort = '-rank',
                                                 count = 1,
                                         ),
                                     errors = errors,
