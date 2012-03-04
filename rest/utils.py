@@ -54,7 +54,7 @@ def user_rank_dict():
     if check_count:
         _rank = set([i[1] for i in check_count ])
         _rank = [i for i in _rank]
-        _rank.sort()
+        _rank.sort(reverse=True)
         _rank = [(i, _rank.index(j)+1) for i,j in check_count]
         rank = dict(_rank)
     return dict(rank)
